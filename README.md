@@ -20,4 +20,11 @@ THINKPHP3.0
 
         $vi ./log/Conf/config.php
         
+5. 若数据库未创建请创建数据库，使用sqlyog等工具执行`sqlbackup`目录下的sql脚本。
+
+    1. 执行`create*.sql`。依次执行`create_datadict.sql`，`create_log.sql`，`create_session.sql`，`create_station.sql`脚本。
+    2. 执行`fun*.sql`。依次执行`fun_get_cpu_state_name.sql`，`fun_get_log_type_id.sql`，`fun_get_series_state_name.sql`脚本。
+    3. 执行`view*.sql`。依次执行`view_log_info.sql`，`view_session.sql`。
+
+
 5. 打开浏览器进行测试，[http://localhost/cishark](http://localhost/cishark)

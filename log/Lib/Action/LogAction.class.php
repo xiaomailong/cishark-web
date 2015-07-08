@@ -3,15 +3,15 @@ class LogAction extends CommonAction
 {
     protected $dao,$roleid;
 
-	function _initialize()
-	{
-	}
-	/**
+    function _initialize()
+    {
+    }
+    /**
      * 列表
      */
-	public function index()
-	{
-		$this->display();
-	}
+    public function index()
+    {
+        $this->display();
+    }
 }
 ?>

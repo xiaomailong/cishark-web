@@ -1,8 +1,8 @@
 <?php
 
 class HealthAction extends CommonAction {
-	public function index() {
-		$this->display();
-	}
+    public function index() {
+        $this->display();
+    }
 }
 ?>
