@@ -1,0 +1,69 @@
+<layout name="layout"/>
+<table  class="search_table" width="100%">
+    <tr>
+        <td>
+            <form action="{:U('User/index')}" method="get">
+                <input type="hidden" name="m" value="{$Think.MODULE_NAME}" />
+                <input type="hidden" name="a" value="{$Think.ACTION_NAME}" />           
+                <select name="stationname">
+                    <option value="1" <eq name="stationname" value="1">selected</eq>>厂内站</option>
+                    <option value="2" <eq name="stationname" value="2">selected</eq>>标准站</option>
+                </select>
+                <select name="series_state">
+                    <option value="1" <eq name="series_state" value="1">selected</eq>>主系状态</option>
+                    <option value="2" <eq name="series_state" value="2">selected</eq>>停机状态</option>
+                    <option value="3" <eq name="series_state" value="3">selected</eq>>校核状态</option>
+                    <option value="4" <eq name="series_state" value="4">selected</eq>>热备状态</option>
+                </select>
+                日期：<input type="text" />
+                时间：<input type="text" />
+                <checkbox name="ss">sss</checkbox>
+                <input type="submit" value="{:L('chaxun')}"  class="button" />
+                <input type="reset" value="{:L('reset')}" class="button"  />
+            </form>
+        </td>
+
+    </tr>
+</table>
+
+<form name="myform" action="{:U('User/deleteall')}" method="get">
+    <div class="table-list">
+        <table width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th width="20"><input type="checkbox"  id="check_box"  onclick="selectall('ids[]');" /></th>
+                    <th width="40">ID</th>
+                    <th width="100" align="left">{:L('logincode')}</th> 
+                    <th width="110">{:L('user_group')}</th>
+                    <th width="150">{:L('user_reg_time')}</th>  
+                    <th  width="120">{:L('manage')}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <volist name="ulist" id="user" key="k">
+                <tr>
+                    <td align="center"><input type="checkbox" name="ids[]" value="{$user['userid']}" /></td>
+                    <td align="center">{$user['userid']}</td>
+                    <td>{$user['user_code']}</td>
+                    <td align="center">{$usergroup[$user['roleid']]['name']}</td>
+                    <td align="center">{$user['update_date']|date="Y-m-d H:m:s",###}</td>           
+                    <td align="center">
+                        <a href="{:U('User/edit',array(userid=>$user['userid']))}">{:L('edit')}</a> |
+                        <a href="javascript:confirm_delete('{:U('User/delete',array(userid=>$user['userid']))}')">{:L('delete')}</a></td>           
+                </tr>
+                </volist>
+            </tbody>
+        </table>
+
+        <div class="btn"><input type="submit" class="button" name="dosubmit" value="<?php echo L('delete')?>" /></div>  </div>
+</div>
+</form>
+
+<php>
+    if(empty($ulist) == true){
+        echo "<div id='pages'>对不起，没有数据</div>";
+    }else{
+        echo "<div id='pages'>".$page."</div>";
+    }
+</php>
+
