@@ -1,65 +1,94 @@
 <layout name="layout"/>
+<link href="../Public/js/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+<link href="../Public/js/jQuery-Timepicker-Addon/jquery-ui-timepicker-addon.css" rel="stylesheet" type="text/css" />
+
+<script src="../Public/js//jquery-ui.min.js" type="text/javascript"></script>
+<script src="../Public/js/jQuery-Timepicker-Addon/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+    jQuery(function () {
+        // 时间设置
+        jQuery('.time').datetimepicker({
+            timeFormat: "HH:mm:ss",
+            dateFormat: "yy-mm-dd"
+        });
+
+    });
+</script>
+
 <table  class="search_table" width="100%">
     <tr>
         <td>
             <form action="{:U('User/index')}" method="get">
                 <input type="hidden" name="m" value="{$Think.MODULE_NAME}" />
                 <input type="hidden" name="a" value="{$Think.ACTION_NAME}" />           
-                <select name="stationname">
-                    <option value="1" <eq name="stationname" value="1">selected</eq>>厂内站</option>
-                    <option value="2" <eq name="stationname" value="2">selected</eq>>标准站</option>
+                <select name="station">
+                    <volist name="station_list" id="station">
+                    <option value="{$station['id']}" <eq name="station" value="$station['id']">selected="selected"</eq>>{$station['name']}</option>
+                    </volist>
                 </select>
                 <select name="series_state">
-                    <option value="1" <eq name="series_state" value="1">selected</eq>>主系状态</option>
-                    <option value="2" <eq name="series_state" value="2">selected</eq>>停机状态</option>
-                    <option value="3" <eq name="series_state" value="3">selected</eq>>校核状态</option>
-                    <option value="4" <eq name="series_state" value="4">selected</eq>>热备状态</option>
+                    <volist name="series_states" id="state">
+                    <option value="{$state['id']}" <eq name="series_state" value="$state['id']">selected="selected"</eq>>{$state['name']}</option>
+                    </volist>
                 </select>
-                日期：<input type="text" />
-                时间：<input type="text" />
-                <checkbox name="ss">sss</checkbox>
+                <select name="cpu_state">
+                    <volist name="cpu_states" id="state">
+                    <option value="{$state['id']}" <eq name="cpu_state" value="$state['id']">selected="selected"</eq>>{$state['name']}</option>
+                    </volist>
+                </select>
+                时间：<input type="text" name="time" class="time" size="20" value="{$time}" />
+                筛选：
+                <label for="fsm">
+                    <input type='checkbox' id='fsm' name='fsm' value='1' <if condition="($fsm eq 1)"> checked </if>/>&nbsp;状态机
+                </label>
+                <label for="eeu_recv">
+                    <input type='checkbox' id='eeu_recv' name='eeu_recv' value='1' <if condition="($eeu_recv eq 1)"> checked </if>/>&nbsp;电子单元接收
+                </label>
+                <label for="eeu_send">
+                    <input type='checkbox' id='eeu_send' name='eeu_send' value='1' <if condition="($eeu_send eq 1)"> checked </if>/>&nbsp;电子单元发送
+                </label>
+                <label for="eeu_request">
+                    <input type='checkbox' id='eeu_request' name='eeu_request' value='1' <if condition="($eeu_request eq 1)"> checked </if>/>&nbsp;电子单元请求
+                </label>
+
+
                 <input type="submit" value="{:L('chaxun')}"  class="button" />
+                <!--
                 <input type="reset" value="{:L('reset')}" class="button"  />
+                -->
             </form>
         </td>
     </tr>
 </table>
 
-<form name="myform" action="{:U('User/deleteall')}" method="get">
+<form name="myform" method="post">
     <div class="table-list">
         <table width="100%" cellspacing="0">
             <thead>
                 <tr>
-                    <th width="20"><input type="checkbox"  id="check_box"  onclick="selectall('ids[]');" /></th>
-                    <th width="40">ID</th>
-                    <th width="100" align="left">{:L('logincode')}</th> 
-                    <th width="110">{:L('user_group')}</th>
-                    <th width="150">{:L('user_reg_time')}</th>  
-                    <th  width="120">{:L('manage')}</th>
+                    <th width="160">时间（秒）</th>
+                    <th width="80">时间（毫秒）</th>
+                    <th width="80">类型</th>
+                    <th >信息</th>
                 </tr>
             </thead>
             <tbody>
-                <volist name="ulist" id="user" key="k">
+                <volist name="data_list" id="data" key="k">
                 <tr>
-                    <td align="center"><input type="checkbox" name="ids[]" value="{$user['userid']}" /></td>
-                    <td align="center">{$user['userid']}</td>
-                    <td>{$user['user_code']}</td>
-                    <td align="center">{$usergroup[$user['roleid']]['name']}</td>
-                    <td align="center">{$user['update_date']|date="Y-m-d H:m:s",###}</td>           
-                    <td align="center">
-                        <a href="{:U('User/edit',array(userid=>$user['userid']))}">{:L('edit')}</a> |
-                        <a href="javascript:confirm_delete('{:U('User/delete',array(userid=>$user['userid']))}')">{:L('delete')}</a></td>           
+                    <td align="center">{$data['time']}</td>
+                    <td align="center">{$data['usec']}</td>
+                    <td align="center">{$data['type']}</td>
+                    <td align="left">{$data['content']}</td>
                 </tr>
                 </volist>
             </tbody>
         </table>
-
-        <div class="btn"><input type="submit" class="button" name="dosubmit" value="<?php echo L('delete')?>" /></div>  </div>
 </div>
 </form>
 
 <php>
-    if(empty($ulist) == true){
+    if(empty($data_list) == true){
         echo "<div id='pages'>对不起，没有数据</div>";
     }else{
         echo "<div id='pages'>".$page."</div>";

@@ -10,6 +10,7 @@
  */
 
 abstract class CommonAction extends Action {
+
     function _initialize()
     {
     }

@@ -107,7 +107,7 @@ zoom: 1;
 .table-list td , .table-list th {padding-left:10px;_padding-left:5px;}
 .table-list td img {vertical-align:middle;}
 .table-list thead th, .table-list thead td{ height:30px; background:#eef3f7; border-bottom:1px solid #d5dfe8; font-weight:normal;line-height:30px;}
-.table-list tbody td , .table-list .btn{border-bottom: #eee 1px solid;line-height:30px;}
+.table-list tbody td , .table-list .btn{border-bottom: #eee 1px solid;line-height:15px;}
 .btn{background:#f6f6f6; padding:6px 12px; height:30px;line-height:30px}
 .table-list tr:hover , .table-list table tbody tr:hover{ background:#fbffe4}
 .nHover tr:hover , .nHover tr:hover td{ background:none}
