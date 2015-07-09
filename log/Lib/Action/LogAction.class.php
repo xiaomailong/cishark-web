@@ -22,14 +22,20 @@ class LogAction extends CommonAction
     /*
      * 根据双系状态信息、CPU状态信息、时间信息得到session的id
      */
-    private function get_session_id($series_sate,$cpu_state,$time)
+    private function get_session_id($series_state,$cpu_state,$time)
     {
+        $tb_name = $this->get_log_tb_name($time);
         $timestamp = strtotime($time);
 
-        $sessions = $this->db_session->field('session_id')
-            ->where("start_tv_sec >= $timestamp")
-            ->select();
-        # echo $this->db_session->GetLastSql();
+        $model = M();
+        $sql = "SELECT DISTINCT $tb_name.session_id AS session_id
+                FROM `$tb_name`,`session`
+                WHERE $tb_name.log_tv_sec = $timestamp
+                AND $tb_name.`session_id` = session.`session_id`
+                AND session.cpu_state = $cpu_state
+                AND session.series_state = $series_state";
+        $sessions = $model->query($sql);
+        # echo $model->GetLastSql();
         if (empty($sessions)) {
             return NULL;
         }else {
@@ -91,6 +97,18 @@ class LogAction extends CommonAction
         return $d && $d->format($format) == $date;
     }
     /*
+     * 返回给定时间两个小时后的时间
+     */
+    private function next_two_hour_str($time)
+    {
+        $d = DateTime::createFromFormat('Y-m-d H:i:s', $time);
+        /*向后递增两个小时，格式说明http://sixrevisions.com/web-development/php-dateinterval-class/*/
+        $interval = new DateInterval("PT2H");
+
+        $new_date = date_add($d,$interval);
+        return date_format($new_date, 'Y-m-d H:i:s');
+    }
+    /*
      * 验证get的数据
      */
     private function check_get()
@@ -131,9 +149,12 @@ class LogAction extends CommonAction
         $eeu_send = $_GET['eeu_send'];
         $eeu_request = $_GET['eeu_request'];
 
+        $end_time = $this->next_two_hour_str($time);
+
         /*得到条件*/
         $tb_name = $this->get_log_tb_name($time);
         $session_id = $this->get_session_id($series_state,$cpu_state,$time);
+
         $type_list = "0";
         if (empty($fsm) == false) {
             $type_list = $type_list.$this->get_fsm_id_str_list();
@@ -158,10 +179,12 @@ class LogAction extends CommonAction
                            log_content as content ';
         $from =   'FROM `'.$tb_name.'` ';
         /*这里只限制了开始时间，没有限制结束时间，因为数据以天表存储，所以不会有太多的数据*/
-        $where =  'WHERE session_id = '.$session_id.
-                     ' AND log_type IN ('.$type_list.') 
-                      AND log_tv_sec >= UNIX_TIMESTAMP("'.$time.'") ';
-        $order =  'ORDER BY log_tv_sec,log_tv_usec ';
+        $where =  "WHERE session_id = $session_id 
+                      AND log_type IN ($type_list) 
+                      AND log_tv_sec >= UNIX_TIMESTAMP('$time') 
+                      AND log_tv_sec <= UNIX_TIMESTAMP('$end_time') 
+                      ";
+        $order =  "ORDER BY log_tv_sec,log_tv_usec ";
 
         $count = 'SELECT 1 ';
 
