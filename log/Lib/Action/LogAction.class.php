@@ -68,19 +68,39 @@ class LogAction extends CommonAction
         $eeu_request = $_GET['eeu_request'];
 
         # $tb_name = $this->get_log_tb_name($time);
-        $tb_name = "log20150708";
-        $model = M();
-        $sql = 'SELECT FROM_UNIXTIME(log_tv_sec) as time,
-                       log_tv_usec as usec,
-                       get_log_type_name(log_type) as type,
-                       log_content as content
-                FROM `log20150707`
-                WHERE session_id = 3066 
-                    AND log_type IN (165,167,168,169,170,171,0) 
-                    AND log_tv_sec >= UNIX_TIMESTAMP("2015-03-23 09:25:00") 
-                ORDER BY log_tv_sec,log_tv_usec';
+        $tb_name = "log20150707";
 
+        import('ORG.Util.Page');
+
+        $model = M();
+
+        $select = 'SELECT FROM_UNIXTIME(log_tv_sec) as time,
+                           log_tv_usec as usec,
+                           get_log_type_name(log_type) as type,
+                           log_content as content ';
+        $from =   'FROM `'.$tb_name.'` ';
+        /*这里只限制了开始时间，没有限制结束时间，因为数据以天表存储，所以不会有太多的数据*/
+        $where =  'WHERE session_id = 3066 
+                      AND log_type IN (165,167,168,169,170,171,0) 
+                      AND log_tv_sec >= UNIX_TIMESTAMP("2015-03-23 09:25:00") ';
+        $order =  'ORDER BY log_tv_sec,log_tv_usec ';
+
+        $count = 'SELECT 1 ';
+
+        $sql = $count.$from.$where.$order;
+
+        /*计算出总数，并分页查找*/
         $res = $model->query($sql); 
+        $count = sizeof($res);
+
+        $page = new Page($count,C("PAGESIZE"));
+        $show = $page->show();
+        $this->assign("page",$show);
+
+        $limit =  'LIMIT '.$page->firstRow.','.$page->listRows;
+
+        $sql = $select.$from.$where.$order.$limit;
+        $res = $model->query($sql);
 
         $this->assign("data_list",$res);
 

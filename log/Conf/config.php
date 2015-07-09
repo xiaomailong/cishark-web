@@ -116,7 +116,7 @@ $think_config = array(
     'VAR_TEMPLATE'          => 't',		// 默认模板切换变量
 
 	/* 页面设置 */
-	'PAGESIZE'              => 10,               //配置每页显示数据个数
+	'PAGESIZE'              => 1000,               //配置每页显示数据个数
 
 	/*RBAC权限控制*/
 	'USER_AUTH_ON'			=> false,
