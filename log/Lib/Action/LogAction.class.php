@@ -16,14 +16,66 @@ class LogAction extends CommonAction
      */
     private function get_log_tb_name($time)
     {
-        # code...
+        $d = DateTime::createFromFormat('Y-m-d H:i:s', $time);
+        return 'log'.$d->format("Ymd");
     }
     /*
      * 根据双系状态信息、CPU状态信息、时间信息得到session的id
      */
     private function get_session_id($series_sate,$cpu_state,$time)
     {
+        $timestamp = strtotime($time);
 
+        $sessions = $this->db_session->field('session_id')
+            ->where("start_tv_sec >= $timestamp")
+            ->select();
+        # echo $this->db_session->GetLastSql();
+        if (empty($sessions)) {
+            return NULL;
+        }else {
+            return $sessions[0]['session_id'];
+        }
+    }
+    private function get_id_str_list($where)
+    {
+        $fsm_data_dict = $this->db_data_dict->field("fd_value")
+            ->where($where)
+            ->select();
+        # echo $this->db_data_dict->GetLastSql();
+        $str_list = "";
+        foreach ($fsm_data_dict as $key => $value) {
+            $str_list = $str_list.",".$value['fd_value'];
+        }
+        # echo "$str_list";
+        return $str_list;
+    }
+    /*
+     * 从数据字典当中得到状态机相关id，并以字符串形式返回
+     */
+    private function get_fsm_id_str_list()
+    {
+        return $this->get_id_str_list("enum_name like 'fsm%'");
+    }
+    /*
+     * 从数据字典当中得到电子单元接收类型的id
+     */
+    private function get_eeu_recv_id_str_list()
+    {
+        return $this->get_id_str_list("enum_name like 'eeu_recv%'");
+    }
+    /*
+     * 从数据字典当中得到电子单元发送类型的id
+     */
+    private function get_eeu_send_id_str_list()
+    {
+        return $this->get_id_str_list("enum_name like 'eeu_send%'");
+    }
+    /*
+     * 从数据字典当中得到电子单元请求类型的id
+     */
+    private function get_eeu_request_id_str_list()
+    {
+        return $this->get_id_str_list("enum_name = 'eeu_request_status'");
     }
     /*
      * 向模板当中赋值站场名称信息
@@ -33,19 +85,21 @@ class LogAction extends CommonAction
         $station_list = $this->db_station->field("id,name")->select();
         $this->assign('station_list',$station_list);
     }
-    /**
-     * 列表
-     */
-    public function index()
+    private function validate_date($date,$format = 'Y-m-d H:i:s')
     {
-        $stationname = $_GET['station'];
-
+        $d = DateTime::createFromFormat($format, $date);
+        return $d && $d->format($format) == $date;
+    }
+    /*
+     * 验证get的数据
+     */
+    private function check_get()
+    {
         /*如果没有传递双系状态参数则以主系为主*/
         if (empty($_GET['series_state'])) {
             $data = $this->db_data_dict->field('fd_value')->where("enum_name='series_primary'")->select();
             $_GET['series_state'] = $data[0]['fd_value'];
         }
-        $series_state = $_GET['series_state'];
 
         /*若cpu状态没有传递则使用主CPU*/
         if (empty($_GET['cpu_state'])) {
@@ -53,22 +107,46 @@ class LogAction extends CommonAction
             $_GET['cpu_state'] = $data[0]['fd_value'];
             # echo $_GET['cpu_state'];
         }
-        $cpu_state = $_GET['cpu_state'];
 
         /*若时间未传递使用当前时间*/
-        if(empty($_GET['time']))
+        if(empty($_GET['time']) or $this->validate_date($_GET['time']) == false)
         {
+            echo $_GET['time'];
             $_GET['time'] = date_format(new DateTime(), 'Y-m-d H:i:s');
         }
-        $time = $_GET['time'];
+    }
+    /**
+     * 列表
+     */
+    public function index()
+    {
+        $this->check_get();
 
+        $stationname = $_GET['station'];
+        $series_state = $_GET['series_state'];
+        $cpu_state = $_GET['cpu_state'];
+        $time = $_GET['time'];
         $fsm = $_GET['fsm'];
         $eeu_recv = $_GET['eeu_recv'];
         $eeu_send = $_GET['eeu_send'];
         $eeu_request = $_GET['eeu_request'];
 
-        # $tb_name = $this->get_log_tb_name($time);
-        $tb_name = "log20150707";
+        /*得到条件*/
+        $tb_name = $this->get_log_tb_name($time);
+        $session_id = $this->get_session_id($series_state,$cpu_state,$time);
+        $type_list = "0";
+        if (empty($fsm) == false) {
+            $type_list = $type_list.$this->get_fsm_id_str_list();
+        }
+        if (empty($eeu_recv) == false) {
+            $type_list = $type_list.$this->get_eeu_recv_id_str_list();
+        }
+        if (empty($eeu_send) == false) {
+            $type_list = $type_list.$this->get_eeu_send_id_str_list();
+        }
+        if (empty($eeu_request) == false) {
+            $type_list = $type_list.$this->get_eeu_request_id_str_list();
+        }
 
         import('ORG.Util.Page');
 
@@ -80,14 +158,15 @@ class LogAction extends CommonAction
                            log_content as content ';
         $from =   'FROM `'.$tb_name.'` ';
         /*这里只限制了开始时间，没有限制结束时间，因为数据以天表存储，所以不会有太多的数据*/
-        $where =  'WHERE session_id = 3066 
-                      AND log_type IN (165,167,168,169,170,171,0) 
-                      AND log_tv_sec >= UNIX_TIMESTAMP("2015-03-23 09:25:00") ';
+        $where =  'WHERE session_id = '.$session_id.
+                     ' AND log_type IN ('.$type_list.') 
+                      AND log_tv_sec >= UNIX_TIMESTAMP("'.$time.'") ';
         $order =  'ORDER BY log_tv_sec,log_tv_usec ';
 
         $count = 'SELECT 1 ';
 
         $sql = $count.$from.$where.$order;
+        # echo $sql;
 
         /*计算出总数，并分页查找*/
         $res = $model->query($sql); 
