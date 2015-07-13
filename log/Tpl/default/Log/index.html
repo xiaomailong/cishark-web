@@ -90,6 +90,7 @@
 <php>
     if(empty($data_list) == true){
         echo "<div id='pages'>对不起，没有数据</div>";
+        echo "$last_select_sql";
     }else{
         echo "<div id='pages'>".$page."</div>";
     }

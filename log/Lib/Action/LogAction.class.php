@@ -21,25 +21,40 @@ class LogAction extends CommonAction
     }
     /*
      * 根据双系状态信息、CPU状态信息、时间信息得到session的id
+     * 选择出session_id的方案：
+     * 1. 从日志表中选取，使用这种方式选取时，当服务器的时间错乱的时候
+     *    选出就会失败。见版本47f3f47
+     * 2. 从session表当中选取，这种选取方式要当心session表当中end_tv_sec
+     *    可能为空的情况。
      */
     private function get_session_id($series_state,$cpu_state,$time)
     {
-        $tb_name = $this->get_log_tb_name($time);
         $timestamp = strtotime($time);
 
         $model = M();
-        $sql = "SELECT DISTINCT $tb_name.session_id AS session_id
-                FROM `$tb_name`,`session`
-                WHERE $tb_name.log_tv_sec = $timestamp
-                AND $tb_name.`session_id` = session.`session_id`
-                AND session.cpu_state = $cpu_state
-                AND session.series_state = $series_state";
+
+        $sql = "SELECT session_id
+                FROM `session`
+                WHERE series_state = $series_state
+                      AND cpu_state = $cpu_state
+                      AND start_tv_sec <= $timestamp
+                ";
+
         $sessions = $model->query($sql);
         # echo $model->GetLastSql();
         if (empty($sessions)) {
             return NULL;
         }else {
-            return $sessions[0]['session_id'];
+            /*得到最近的session_id*/
+            $session_id = $sessions[count($sessions) - 1]['session_id'];
+            $last_session = $this->db_session->where("session_id = $session_id")->find(); 
+            $end_tv_sec = $last_session['end_tv_sec'];
+            if (!empty($end_tv_sec) && (int)$end_tv_sec < $timestamp) {
+                return NULL;
+            }
+            else{
+                return $session_id;
+            }
         }
     }
     private function get_id_str_list($where)
@@ -190,6 +205,7 @@ class LogAction extends CommonAction
 
         $sql = $count.$from.$where.$order;
         # echo $sql;
+        $this->assign("last_select_sql",$sql);
 
         /*计算出总数，并分页查找*/
         $res = $model->query($sql); 
