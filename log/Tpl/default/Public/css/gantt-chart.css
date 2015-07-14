@@ -1,0 +1,36 @@
+html,body,#wrapper {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+}
+
+.chart {
+	font-family: Arial, sans-serif;
+	font-size: 12px;
+}
+
+.axis path,.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+.bar-unkown {
+	fill: #000000;
+}
+
+.bar-stop {
+	fill: #E1EED2;
+}
+
+.bar-check {
+	fill: #123555;
+}
+
+.bar-spare {
+	fill: #E69B02;
+}
+
+.bar-master {
+	fill: #D1484F;
+}

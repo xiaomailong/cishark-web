@@ -1,3 +1,33 @@
 <layout name="layout"/>
 
-<div>欢迎使用计算机联锁日志查询系统，查询日志请点击右上角的日志</div>
+<h2>系统运行状态</h2>
+<form name="myform" method="post">
+    <div class="table-list">
+        <table width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th width="10">id</th>
+                    <th width="40">父id</th>
+                    <th width="40">开始时间</th>
+                    <th width="40">结束时间</th>
+                    <th width="40">主机地址</th>
+                    <th width="40">双系状态</th>
+                    <th width="40">CPU状态</th>
+                </tr>
+            </thead>
+            <tbody>
+                <volist name="sessions" id="data" key="k">
+                <tr>
+                    <td align="center">{$data['session_id']}</td>
+                    <td align="center">{$data['parent_id']}</td>
+                    <td align="center">{$data['start_tv_sec']}:{$data['start_tv_usec']}</td>
+                    <td align="center">{$data['end_tv_sec']}:{$data['end_tv_usec']}</td>
+                    <td align="center">{$data['ip']}</td>
+                    <td align="center">{$data['series_state']}</td>
+                    <td align="center">{$data['cpu_state']}</td>
+                </tr>
+                </volist>
+            </tbody>
+        </table>
+</div>
+</form>
