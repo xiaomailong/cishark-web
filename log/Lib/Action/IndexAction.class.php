@@ -22,8 +22,8 @@ class IndexAction extends CommonAction {
             FROM_UNIXTIME(end_tv_sec) as end_tv_sec,
             end_tv_usec,
             ip,
-            series_state,
-            cpu_state
+            get_series_state_name(series_state) AS series_state,
+            get_cpu_state_name(cpu_state) as cpu_state
             ")
             ->order('session_id desc')
             ->select();
