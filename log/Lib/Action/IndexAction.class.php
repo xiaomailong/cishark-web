@@ -29,7 +29,7 @@ class IndexAction extends CommonAction {
             ")
             ->count();
 
-        $page=new Page($count,C("PAGESIZE"));
+        $page=new Page($count,100);
         $show=$page->show();
         $this->assign("page",$show);
 
