@@ -31,3 +31,10 @@
         </table>
 </div>
 </form>
+<php>
+    if(empty($sessions) == true){
+        echo "<div id='pages'>对不起，没有数据</div>";
+    }else{
+        echo "<div id='pages'>".$page."</div>";
+    }
+</php>
