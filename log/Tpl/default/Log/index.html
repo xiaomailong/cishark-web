@@ -89,8 +89,8 @@
 
 <php>
     if(empty($data_list) == true){
-        echo "<div id='pages'>对不起，没有数据</div>";
         echo "$last_select_sql";
+        echo "<div id='pages'>对不起，没有数据。提示：1.可以尝试查找其它CPU的日志，如备系主CPU。2.可以将时间稍微向前挪动一下查询，因为无法保证联锁机日期与维修机日期完全一致。</div>";
     }else{
         echo "<div id='pages'>".$page."</div>";
     }
