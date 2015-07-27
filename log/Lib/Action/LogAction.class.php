@@ -204,8 +204,6 @@ class LogAction extends CommonAction
         $count = 'SELECT 1 ';
 
         $sql = $count.$from.$where.$order;
-        # echo $sql;
-        $this->assign("last_select_sql",$sql);
 
         /*计算出总数，并分页查找*/
         $res = $model->query($sql); 
@@ -219,6 +217,9 @@ class LogAction extends CommonAction
 
         $sql = $select.$from.$where.$order.$limit;
         $res = $model->query($sql);
+
+        # echo $sql;
+        $this->assign("last_select_sql",$sql);
 
         $this->assign("data_list",$res);
 
