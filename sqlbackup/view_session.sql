@@ -1,6 +1,6 @@
 DELIMITER $$
 
-ALTER ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_session` AS (
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_session` AS (
 SELECT
   `session`.`session_id`    AS `session_id`,
   `session`.`parent_id`   AS `parent_id`,
